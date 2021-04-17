@@ -8,14 +8,14 @@ import Search from "./components/pages/Search/index";
 function App() {
   return (
     <HashRouter>
-    <Switch>
+      <Switch>
         <Route exact path="/" component={Search} />
         <Route exact path="/search" component={Search} />
         <Route exact path="/saved" component={Saved} />
-    </Switch>
+      </Switch>
     </HashRouter>
   );
-  
+
 }
 
 export default App;
