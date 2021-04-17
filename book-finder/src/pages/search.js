@@ -1,41 +1,46 @@
-import { useState, useEffect } from 'react';
-import List from '../../src/components/List';
+import {useState} from 'react';
+import Finder from '../../src/components/Finder';
 import API from '../../utils/api';
 
-const Save = () => {
-    const [bookList, setBookList] = useState([]);
+const Search = () => {
+  const [keyword, setKeyword] = useState('');
+  const [noResults, setNoResults] = useState(false);
+  const [bookList, setBookList] = useState([]);
+  
+  const searchForBook = async() => {
+    const {data} = await API.searchFor(keyword);
+    const results = data.map(b => ({
+      id: b.id,
+      title: b.volumeInfo.title,
+      author: b.volumeInfo?.author ? b.volumeInfo.author.join(', ') : '',
+      description: b?.searchInfo?.description ? b.searchInfo.description  : '(No description available)',
+      image: b.volumeInfo?.imageLinks?.smallThumbnail ?  b.volumeInfo.imageLinks.smallThumbnail : '/favicon.ico'
+    }))
+    setBookList(results)
+    setNoResults(results.length ? false : true)
+  }
 
-    useEffect(() => {
-        const run = async () => {
-            const { data } = await API.getBooks();
-            setBookList(data)
-        }
-        run();
-    }, []);
-
-    const del = {
-        type: 'Delete',
-        theme: 'outline-danger',
-        fn: async (props) => {
-            try {
-                await API.deleteBook(props._id);
-                setBookList(prev => prev.slice().filter(book => book._id !== props._id));
-            } catch (err) {
-                console.log('Error: Cannot delete');
-            }
-        }
+  const save = {
+    type: 'Save',
+    theme: 'outline-success',
+    fn: async(bookProps) => {
+      try {
+        await API.saveBook(bookProps);
+        alert(`Book '${bookProps.title}' successfuly saved.`)
+      } catch(err) {
+        alert(`WARNING: '${bookProps.title}' failed to save!`)
+      }
     }
+  }
 
-    return (
-        <div>
-            { bookList.length
-                ? <List
-                    books={List}
-                    btn={del}
-                />
-            };
-        </div>
-    )
+  return (
+    <div>
+      <finder
+        handleInputChange={(e) => setKeyword(e.target.value)}
+        search={searchForBook}
+      />
+    </div>
+  );
 }
 
-export default Save;
+export default Search;
